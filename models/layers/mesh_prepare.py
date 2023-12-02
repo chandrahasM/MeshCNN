@@ -306,6 +306,29 @@ def set_edge_lengths(mesh, edge_points=None):
     edge_lengths = np.linalg.norm(mesh.vs[edge_points[:, 0]] - mesh.vs[edge_points[:, 1]], ord=2, axis=1)
     mesh.edge_lengths = edge_lengths
 
+def calculate_centroid_feature(mesh, edge_point_idx):
+    # Extract vertices for the edge and its shared edges
+  features =[]
+  for edge in edge_point_idx:
+    a = mesh.vs[edge[0]]
+    b = mesh.vs[edge[1]]
+    c = mesh.vs[edge[2]]
+    d = mesh.vs[edge[3]]
+    c1= (a+b)/2
+    c1= np.average(c1,axis =0)
+    c2= (a+c)/2
+    c2= np.average(c2,axis =0)
+    c3= (b+c)/2
+    c3= np.average(c3,axis =0)
+    c4= (d+b)/2
+    c4= np.average(c4,axis =0)
+    c5= (d+c)/2
+    c5= np.average(c5,axis =0)
+    features.append([c1,c2,c3,c4,c5])
+
+  final_features = np.transpose(features,axes=None)
+
+  return final_features
 
 def extract_features(mesh):
     features = []
@@ -313,10 +336,15 @@ def extract_features(mesh):
     set_edge_lengths(mesh, edge_points)
     with np.errstate(divide='raise'):
         try:
-            for extractor in [dihedral_angle, symmetric_opposite_angles, symmetric_ratios]:
-                feature = extractor(mesh, edge_points)
-                features.append(feature)
-            return np.concatenate(features, axis=0)
+            # for extractor in [dihedral_angle, symmetric_opposite_angles, symmetric_ratios]:
+            #     feature = extractor(mesh, edge_points)
+            #     features.append(feature)
+            # print("features:",features)
+            # print("concatinated:",np.concatenate(features, axis=0))
+            # print(np.concatenate(features, axis=0).shape)
+            features = calculate_centroid_feature(mesh, edge_points)
+            return features
+            # return np.concatenate(features, axis=0)
         except Exception as e:
             print(e)
             raise ValueError(mesh.filename, 'bad features')
